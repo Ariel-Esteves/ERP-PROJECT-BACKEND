@@ -2,12 +2,15 @@ package com.example.finance.services;
 
 import com.example.finance.Repositories.*;
 import com.example.finance.models.entities.*;
-import com.example.finance.models.entities.dto.CarteiraDto;
-import com.example.finance.models.entities.dto.EstoqueDto;
+import com.example.finance.models.entities.dto.EstoqueMovimentoDto;
+import com.example.finance.models.entities.dto.VendaDto;
 import com.example.finance.models.entities.enums.TIPOMOVIMENTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,10 +24,19 @@ public class VendaService {
 	private final VendaMovimentoRepository vendaMovimentoRepository;
 	private final ProdutoRepository produtoRepository;
 	private final EstoqueRepository estoqueRepository;
-	private final CarteiraRepository carteiraRepository;
 
-	public VendaService(VendaRepository vendaRepository, TipoVendaRepository tipoVendaRepository, EntidadeRepository entidadeRepository, VendaMovimentoRepository vendaMovimentoRepository, ProdutoRepository produtoRepository, EstoqueRepository estoqueRepository,
-	                    CarteiraRepository carteiraRepository) {
+	private final EstoqueMovimentoRepository estoqueMovimentoRepository;
+
+	private final CarteiraMovimentoRepository carteiraMovimentoRepository;
+	private final CarteiraRepository carteiraRepository;
+	private final UserRepository userRepository;
+
+	@Autowired
+	public VendaService(VendaRepository vendaRepository, TipoVendaRepository tipoVendaRepository, EntidadeRepository entidadeRepository,
+	                    VendaMovimentoRepository vendaMovimentoRepository, ProdutoRepository produtoRepository, EstoqueRepository estoqueRepository,
+	                    CarteiraRepository carteiraRepository, EstoqueMovimentoRepository estoqueMovimentoRepository,
+	                    CarteiraMovimentoRepository carteiraMovimentoRepository, UserRepository userRepository)
+	{
 		this.vendaRepository = vendaRepository;
 		this.tipoVendaRepository = tipoVendaRepository;
 		this.entidadeRepository = entidadeRepository;
@@ -32,29 +44,86 @@ public class VendaService {
 		this.produtoRepository = produtoRepository;
 		this.estoqueRepository = estoqueRepository;
 		this.carteiraRepository = carteiraRepository;
+		this.estoqueMovimentoRepository = estoqueMovimentoRepository;
+		this.carteiraMovimentoRepository = carteiraMovimentoRepository;
+		this.userRepository = userRepository;
 	}
 
 
-	public VendaEntity createVenda(VendaEntity vendaEntity) {
-		vendaEntity.getVendaMovimento().forEach(vendaMovimentoEntity -> {
-			EstoqueMovimentoEntity estoqueMovimentoEntity = EstoqueMovimentoEntity.builder()
-			                                                                      .quantidade(vendaMovimentoEntity.getQuantidade())
-			                                                                      .tipo(TIPOMOVIMENTO.SAIDA)
-			                                                                      .id(0)
-			                                                                      .build();
-			List<EstoqueMovimentoEntity> estoqueMovimentoEntities = vendaMovimentoEntity.getProduto().getEstoque().getEstoqueMovimentoEntity();
-			estoqueMovimentoEntities.add(estoqueMovimentoEntity);
+	public VendaEntity createVenda(VendaDto vendaDto) {
+		TipoVendaEntity tipoVenda = TipoVendaEntity.builder().nome("Saida").id(0).build();
+		UserEntity user = userRepository.findById(vendaDto.getUser()).orElseThrow(() -> new RuntimeException("User not found"));
+		EntidadeEntity entidade = entidadeRepository.findById(vendaDto.getEntidade()).orElseThrow(() -> new RuntimeException("Entidade not found"));
 
-			vendaMovimentoEntity.getProduto().getEstoque().setEstoqueMovimentoEntity(estoqueMovimentoEntities);
-			vendaMovimentoEntity.getProduto().getEstoque().setQuantidade(vendaMovimentoEntity.getProduto().getEstoque().getQuantidade().subtract(vendaMovimentoEntity.getQuantidade()));
-			// Save EstoqueMovimentoEntity to the repository
-			estoqueRepository.save(vendaMovimentoEntity.getProduto().getEstoque());
-		});
-
-
-		vendaEntity.setData(LocalDateTime.now());
+		VendaEntity vendaEntity = VendaEntity.builder()
+		                                     .valor(vendaDto.getValor())
+		                                     .data(LocalDateTime.now())
+		                                     .tipoVenda(tipoVenda)
+		                                     .entidade(entidade)
+		                                     .id(0)
+		                                     .user(user)
+		                                     .build();
 
 		VendaEntity vendaSaved = vendaRepository.save(vendaEntity);
+		entidade.getVenda().add(vendaSaved);
+		EntidadeEntity entidadeSaved = entidadeRepository.save(entidade);
+
+		vendaEntity.setEntidade(entidadeSaved);
+
+		user.getVenda().add(vendaSaved);
+		userRepository.save(user);
+
+		List<VendaMovimentoEntity> vendaMovimentoList = vendaDto.getVendaMovimento().stream().map(vendaMovimentoEntity -> {
+
+			ProdutoEntity produtoEntity = produtoRepository.findById(vendaMovimentoEntity.getProduto().getId())
+			                                               .orElseThrow(() -> new RuntimeException("Produto not found"));
+
+			produtoEntity.getEstoque()
+			             .getEstoqueMovimentoEntity()
+			             .add(EstoqueMovimentoEntity.builder()
+			                                        .quantidade(vendaMovimentoEntity.getQuantidade())
+			                                        .tipo(TIPOMOVIMENTO.SAIDA)
+			                                        .estoque(produtoEntity.getEstoque())
+					                                .vendaEntity(null)
+			                                        .id(0)
+			                                        .build());
+
+			CarteiraMovimentoEntity carteiraMovimentoEntidade = CarteiraMovimentoEntity.builder()
+			                                                                           .venda(vendaSaved)
+			                                                                           .valor(vendaMovimentoEntity.getValor())
+			                                                                           .carteira(entidade.getCarteira())
+			                                                                           .data(LocalDateTime.now())
+			                                                                           .tipo(TIPOMOVIMENTO.ENTRADA)
+			                                                                           .id(0)
+			                                                                           .build();
+			carteiraMovimentoRepository.save(carteiraMovimentoEntidade);
+
+			CarteiraMovimentoEntity carteiraMovimentoUser = CarteiraMovimentoEntity.builder()
+			                                                                       .venda(vendaSaved)
+			                                                                       .valor(vendaMovimentoEntity.getValor())
+			                                                                       .tipo(TIPOMOVIMENTO.SAIDA)
+			                                                                       .carteira(user.getCarteira())
+			                                                                       .data(LocalDateTime.now())
+			                                                                       .id(0)
+			                                                                       .build();
+			carteiraMovimentoRepository.save(carteiraMovimentoUser);
+
+			EstoqueMovimentoEntity estoqueMovimento = EstoqueMovimentoEntity.builder()
+			                                                                .vendaEntity(vendaSaved)
+			                                                                .estoque(produtoEntity.getEstoque())
+			                                                                .quantidade(vendaMovimentoEntity.getQuantidade().negate())
+			                                                                .tipo(TIPOMOVIMENTO.SAIDA)
+			                                                                .id(0)
+			                                                                .build();
+
+			estoqueMovimentoRepository.save(estoqueMovimento);
+
+			return VendaMovimentoEntity.builder().produto(produtoEntity).valor(vendaMovimentoEntity.getValor()).quantidade(vendaMovimentoEntity.getQuantidade()).venda(vendaSaved).id(0).build();
+
+		}).collect(Collectors.toList());
+
+		vendaSaved.setVendaMovimento(vendaMovimentoList);
+
 
 		return vendaRepository.save(vendaSaved);
 	}
@@ -62,15 +131,19 @@ public class VendaService {
 	public TipoVendaEntity createTipoVenda(TipoVendaEntity tipoVendaEntity) {
 		return tipoVendaRepository.save(tipoVendaEntity);
 	}
+
 	public List<TipoVendaEntity> getAllTipoVendas() {
 		return tipoVendaRepository.findAll();
 	}
+
 	public Optional<TipoVendaEntity> getTipoVendaById(long id) {
 		return tipoVendaRepository.findById(id);
 	}
+
 	public EntidadeEntity createEntidade(EntidadeEntity entidadeEntity) {
 		return entidadeRepository.save(entidadeEntity);
 	}
+
 	public List<VendaEntity> getAllVendas() {
 		return vendaRepository.findAll();
 	}
@@ -81,11 +154,10 @@ public class VendaService {
 
 	public VendaEntity updateVenda(long id, VendaEntity vendaDetails) {
 		Optional<VendaEntity> optionalVenda = vendaRepository.findById(id);
-		if (optionalVenda.isPresent()) {
+		if(optionalVenda.isPresent()) {
 			VendaEntity vendaEntity = optionalVenda.get();
 			vendaEntity.setValor(vendaDetails.getValor());
 			vendaEntity.setData(vendaDetails.getData());
-			vendaEntity.setTroco(vendaDetails.getTroco());
 			vendaEntity.setTipoVenda(vendaDetails.getTipoVenda());
 			vendaEntity.setEntidade(vendaDetails.getEntidade());
 			return vendaRepository.save(vendaEntity);
@@ -102,37 +174,5 @@ public class VendaService {
 		return vendaMovimentoRepository.findAll();
 	}
 
-	public ProdutoEntity createProduto(ProdutoEntity produtoEntity) {
-		EstoqueEntity estoque = EstoqueEntity.builder().quantidade(BigDecimal.ZERO).data(LocalDateTime.now()).quantidade(produtoEntity.getQuantidade()).id(0).build();
-		produtoEntity.setEstoque(estoque);
-		return produtoRepository.save(produtoEntity);
-	}
 
-	public List<ProdutoEntity> getAllProdutos() {
-		return produtoRepository.findAll();
-	}
-
-	public void deleteProduto(long id) {
-		produtoRepository.deleteById(id);
-	}
-
-	public Optional<EstoqueEntity> setStock(EstoqueDto estoqueDto) {
-		Optional<EstoqueEntity> estoque = estoqueRepository.findById(estoqueDto.getId());
-		if (estoque.isPresent()) {
-			EstoqueEntity estoqueEntity = estoque.get();
-			EstoqueMovimentoEntity estoqueMovimentoEntity = EstoqueMovimentoEntity.builder()
-			                                                                      .quantidade(estoqueDto.getQuantidade())
-			                                                                      .id(0)
-					.tipo(estoqueDto.getQuantidade().compareTo(BigDecimal.ZERO) < 0 ? TIPOMOVIMENTO.SAIDA : TIPOMOVIMENTO.ENTRADA)
-			                                                                      .build();
-			List<EstoqueMovimentoEntity> estoqueMovimentoEntities = estoqueEntity.getEstoqueMovimentoEntity();
-			estoqueMovimentoEntities.add(estoqueMovimentoEntity);
-			estoqueEntity.setEstoqueMovimentoEntity(estoqueMovimentoEntities);
-			estoqueEntity.setQuantidade(estoqueEntity.getQuantidade().add(estoqueDto.getQuantidade()));
-			estoqueRepository.save(estoqueEntity);
-		}
-		return estoque;
-	}
-
-
-	}
+}

@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class EstoqueDto {
+public class EstoqueMovimentoDto {
 	private long id;
 	private BigDecimal quantidade;
 }

@@ -1,5 +1,6 @@
 package com.example.finance.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,6 +19,7 @@ public class VendaMovimentoEntity {
 	private BigDecimal quantidade;
 	private BigDecimal valor;
 	@ManyToOne
+	@JsonIgnore
 	private VendaEntity venda;
 	@ManyToOne
 	private ProdutoEntity produto;

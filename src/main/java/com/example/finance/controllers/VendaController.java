@@ -1,8 +1,9 @@
 package com.example.finance.controllers;
 
 import com.example.finance.models.entities.*;
-import com.example.finance.models.entities.dto.CarteiraDto;
-import com.example.finance.models.entities.dto.EstoqueDto;
+import com.example.finance.models.entities.dto.CarteiraMovimentoDto;
+import com.example.finance.models.entities.dto.EstoqueMovimentoDto;
+import com.example.finance.models.entities.dto.VendaDto;
 import com.example.finance.services.CarteiraService;
 import com.example.finance.services.VendaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,16 +26,8 @@ public class VendaController {
 	}
 
 	@PostMapping("/vendas")
-	public ResponseEntity<?> createVenda(@RequestBody VendaEntity vendaEntity) {
-		if(vendaEntity.getValor().equals(BigDecimal.ZERO)){
-			return ResponseEntity.ok(vendaService.createTipoVenda(vendaEntity.getTipoVenda()));
-		}
-		VendaEntity createdVenda = vendaService.createVenda(vendaEntity);
-		carteiraService.postCarteiraMovimento(CarteiraDto.builder()
-		                                                 .id(createdVenda.getEntidade().getId())
-		                                                 .valor(vendaEntity.getValor())
-		                                                 .venda(createdVenda)
-		                                                 .build());
+	public ResponseEntity<?> createVenda(@RequestBody VendaDto vendaDto) {
+		VendaEntity createdVenda = vendaService.createVenda(vendaDto);
 		return ResponseEntity.ok(createdVenda);
 	}
 
@@ -72,21 +65,6 @@ public class VendaController {
 		return ResponseEntity.ok(vendas);
 	}
 
-	@PostMapping("/produto")
-	public ResponseEntity<ProdutoEntity> createProduto(@RequestBody ProdutoEntity produto) {
-		ProdutoEntity createdProduto = vendaService.createProduto(produto);
-		return ResponseEntity.ok(createdProduto);
-	}
-	@GetMapping("/produto")
-	public ResponseEntity<List<ProdutoEntity>> getAllProdutos() {
-		List<ProdutoEntity> produtos = vendaService.getAllProdutos();
-		return ResponseEntity.ok(produtos);
-	}
-	@DeleteMapping("/produto/{id}")
-	public ResponseEntity<Void> deleteProduto(@PathVariable long id) {
-		vendaService.deleteProduto(id);
-		return ResponseEntity.noContent().build();
-	}
 	@GetMapping("/tipovenda")
 	public ResponseEntity<List<TipoVendaEntity>> getAllTipoVendas() {
 		List<TipoVendaEntity> TipoVenda = vendaService.getAllTipoVendas();
@@ -99,12 +77,4 @@ public class VendaController {
 		return ResponseEntity.ok(createdTipoVenda);
 	}
 
-	@PostMapping("/estoque")
-	public ResponseEntity<ProdutoEntity> createEstoque(@RequestBody EstoqueDto estoqueDto) {
-		Optional<EstoqueEntity> createdEstoque = vendaService.setStock(estoqueDto);
-		if(createdEstoque.isPresent()){
-			return ResponseEntity.ok(createdEstoque.get().getProdutoId());
-		}
-		return ResponseEntity.notFound().build();
-	}
 }

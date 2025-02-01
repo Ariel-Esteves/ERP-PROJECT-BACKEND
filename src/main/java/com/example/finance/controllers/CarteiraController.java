@@ -1,8 +1,7 @@
 package com.example.finance.controllers;
 
 import com.example.finance.models.entities.CarteiraEntity;
-import com.example.finance.models.entities.CarteiraMovimentoEntity;
-import com.example.finance.models.entities.dto.CarteiraDto;
+import com.example.finance.models.entities.dto.CarteiraMovimentoDto;
 import com.example.finance.services.CarteiraService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +17,8 @@ public class CarteiraController {
 	}
 
 	@PostMapping("/carteira")
-	public ResponseEntity<CarteiraEntity> createCarteira(@RequestBody CarteiraDto carteiraDto) {
-		return ResponseEntity.ok(CarteiraService.createCarteira(carteiraDto));
+	public ResponseEntity<CarteiraEntity> createCarteira(@RequestBody CarteiraMovimentoDto carteiraMovimentoDto) {
+		return ResponseEntity.ok(CarteiraService.createCarteira(carteiraMovimentoDto));
 	}
 
 	@GetMapping("/carteira/{id}")
@@ -34,7 +33,7 @@ public class CarteiraController {
 	}
 
 	@PostMapping("/carteira/movimento")
-	public ResponseEntity<CarteiraEntity> postCarteiraMovimento(@RequestBody CarteiraDto carteiraDto) {
-		return ResponseEntity.ok(CarteiraService.postCarteiraMovimento(carteiraDto));
+	public ResponseEntity<CarteiraEntity> postCarteiraMovimento(@RequestBody CarteiraMovimentoDto carteiraMovimentoDto) {
+		return ResponseEntity.ok(CarteiraService.postCarteiraMovimento(carteiraMovimentoDto));
 	}
 }

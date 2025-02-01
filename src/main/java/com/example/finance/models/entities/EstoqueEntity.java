@@ -1,5 +1,6 @@
 package com.example.finance.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,7 +19,8 @@ public class EstoqueEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	@OneToOne
-	private ProdutoEntity produtoId;
+	@JsonBackReference
+	private ProdutoEntity produto;
 	private BigDecimal quantidade;
 	private LocalDateTime data;
 	@OneToMany(cascade = CascadeType.ALL)

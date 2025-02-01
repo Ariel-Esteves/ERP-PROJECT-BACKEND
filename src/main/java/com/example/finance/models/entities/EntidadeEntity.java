@@ -1,10 +1,8 @@
 package com.example.finance.models.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
-
 
 import java.util.List;
 
@@ -28,7 +26,7 @@ public class EntidadeEntity {
 
 	private EntidadeTipoEntity entidadeTipo;
 	@OneToMany(fetch = FetchType.LAZY)
-	@JsonManagedReference
+	@JsonManagedReference("entidade-venda")
 	private List<VendaEntity> venda;
 	@OneToOne(cascade = CascadeType.ALL)
 	@JsonManagedReference

@@ -3,15 +3,18 @@ package com.example.finance.services;
 import com.example.finance.Repositories.CarteiraRepository;
 import com.example.finance.Repositories.EntidadeRepository;
 import com.example.finance.Repositories.EntidadeTipoRepository;
-import com.example.finance.models.entities.*;
-import com.example.finance.models.entities.dto.CarteiraDto;
+import com.example.finance.models.entities.CarteiraEntity;
+import com.example.finance.models.entities.EnderecoEntity;
+import com.example.finance.models.entities.EntidadeEntity;
+import com.example.finance.models.entities.EntidadeTipoEntity;
 import com.example.finance.models.entities.dto.EntidadeDto;
-import com.example.finance.models.entities.enums.TIPOMOVIMENTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,12 +22,10 @@ import java.util.Optional;
 public class EntidadeService {
 
 	private final EntidadeRepository entidadeRepository;
-	private final CarteiraRepository carteiraRepository;
 	private final EntidadeTipoRepository entidadeTipoRepository;
 	@Autowired
-	public EntidadeService(EntidadeRepository entidadeRepository, CarteiraRepository carteiraRepository, EntidadeTipoRepository entidadeTipoRepository) {
+	public EntidadeService(EntidadeRepository entidadeRepository, EntidadeTipoRepository entidadeTipoRepository) {
 		this.entidadeRepository = entidadeRepository;
-		this.carteiraRepository = carteiraRepository;
 		this.entidadeTipoRepository = entidadeTipoRepository;
 	}
 
@@ -46,6 +47,7 @@ public class EntidadeService {
 		                                        .entidade(null)
 		                                        .data(LocalDateTime.now())
 		                                        .valor(BigDecimal.ZERO)
+				.carteiraMovimentoEntity(new ArrayList<>())
 		                                        .id(0).build();
 
 		EntidadeEntity entidadeEntity = EntidadeEntity.builder()

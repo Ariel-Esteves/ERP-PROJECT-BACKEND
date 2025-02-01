@@ -19,4 +19,6 @@ public class EstoqueMovimentoEntity {
 	private TIPOMOVIMENTO tipo;
 	@ManyToOne
 	private EstoqueEntity estoque;
+    @ManyToOne
+	private VendaEntity vendaEntity;
 }

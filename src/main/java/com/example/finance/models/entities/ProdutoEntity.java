@@ -1,5 +1,6 @@
 package com.example.finance.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,7 +21,8 @@ public class ProdutoEntity {
 	private String nome;
 	private BigDecimal valor;
 	private BigDecimal quantidade;
-	@OneToOne(cascade = CascadeType.ALL)
+	@OneToOne
+	@JsonManagedReference
 	private EstoqueEntity estoque;
 	@Override
 	public String toString() {

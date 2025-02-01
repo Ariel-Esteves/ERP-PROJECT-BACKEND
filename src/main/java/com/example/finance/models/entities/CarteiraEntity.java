@@ -1,7 +1,9 @@
 package com.example.finance.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,12 +25,12 @@ public class CarteiraEntity {
 	private LocalDateTime data;
 	@OneToOne
 	@JsonBackReference
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private EntidadeEntity entidade;
 	@OneToMany(cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private List<CarteiraMovimentoEntity> carteiraMovimentoEntity;
-	@Override
-	public String toString() {
-		return String.valueOf(this.valor);
-	}
+	@OneToOne
+	@JsonBackReference("user-carteira")
+	private UserEntity user;
 }

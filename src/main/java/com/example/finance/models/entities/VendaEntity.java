@@ -2,12 +2,8 @@ package com.example.finance.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,20 +14,25 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class VendaEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
+
 	private BigDecimal valor;
 	private LocalDateTime data;
-	private double troco;
 	@ManyToOne(cascade = CascadeType.PERSIST)
 	private TipoVendaEntity tipoVenda;
-	@ManyToOne
-	@JsonBackReference
+	@ManyToOne(cascade = CascadeType.PERSIST)
+	@JsonBackReference("entidade-venda")
 	private EntidadeEntity entidade;
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<VendaMovimentoEntity> vendaMovimento;
-	@OneToOne
-	private CarteiraMovimentoEntity carteiraMovimento;
+	@OneToMany
+	@JsonIgnore
+	private List<CarteiraMovimentoEntity> carteiraMovimento;
+	@ManyToOne
+	@JsonBackReference("user-venda")
+	private UserEntity user;
 }

@@ -3,7 +3,7 @@ package com.example.finance.services;
 import com.example.finance.Repositories.CarteiraRepository;
 import com.example.finance.models.entities.CarteiraEntity;
 import com.example.finance.models.entities.CarteiraMovimentoEntity;
-import com.example.finance.models.entities.dto.CarteiraDto;
+import com.example.finance.models.entities.dto.CarteiraMovimentoDto;
 import com.example.finance.models.entities.enums.TIPOMOVIMENTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,10 +24,12 @@ public class CarteiraService {
 		Optional<CarteiraEntity> carteira = carteiraRepository.findById(id);
 		return carteira;}
 
-	public CarteiraEntity createCarteira(CarteiraDto carteiraDto) {
+	public CarteiraEntity createCarteira(CarteiraMovimentoDto carteiraMovimentoDto) {
 		CarteiraEntity carteiraEntity = CarteiraEntity.builder()
 		                                             .data(LocalDateTime.now())
-		                                             .valor(carteiraDto.getValor())
+		                                             .valor(BigDecimal.ZERO)
+		                                              .entidade(null)
+		                                              .user(carteiraMovimentoDto.getUser())
 		                                             .id(0).build();
 		return carteiraRepository.save(carteiraEntity);
 	}
@@ -37,18 +39,18 @@ public class CarteiraService {
 	}
 
 
-	public CarteiraEntity postCarteiraMovimento(CarteiraDto carteiraDto) {
-		CarteiraEntity carteiraEntity = carteiraRepository.findById(carteiraDto.getId())
+	public CarteiraEntity postCarteiraMovimento(CarteiraMovimentoDto carteiraMovimentoDto) {
+		CarteiraEntity carteiraEntity = carteiraRepository.findById(carteiraMovimentoDto.getId())
 		                                                  .orElseThrow(() -> new RuntimeException("Carteira not found"));
 
-		carteiraEntity.setValor(carteiraEntity.getValor().add(carteiraDto.getValor()));
+		carteiraEntity.setValor(carteiraEntity.getValor().add(carteiraMovimentoDto.getValor()));
 
 		CarteiraMovimentoEntity carteiraMovimentoEntity = CarteiraMovimentoEntity.builder()
 		                                                                         .carteira(carteiraEntity)
 		                                                                         .data(LocalDateTime.now())
-		                                                                         .tipo(carteiraDto.getValor().compareTo(BigDecimal.ZERO) > 0 ? TIPOMOVIMENTO.ENTRADA : TIPOMOVIMENTO.SAIDA)
-		                                                                         .valor(carteiraDto.getValor())
-		                                                                         .venda(carteiraDto.getVenda())
+		                                                                         .tipo(carteiraMovimentoDto.getValor().compareTo(BigDecimal.ZERO) > 0 ? TIPOMOVIMENTO.ENTRADA : TIPOMOVIMENTO.SAIDA)
+		                                                                         .valor(carteiraMovimentoDto.getValor())
+		                                                                         .venda(carteiraMovimentoDto.getVenda())
 		                                                                         .id(0L)
 		                                                                         .build();
 
