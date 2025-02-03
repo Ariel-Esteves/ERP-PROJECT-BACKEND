@@ -10,14 +10,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/cep")
+@RequestMapping("cep")
 public class CepController {
 	private final CepRepository cepRepository;
 	@Autowired
 	public CepController (CepRepository cepRepository){
 		this.cepRepository = cepRepository;
 	}
-	@GetMapping("/{cepValue}")
+	@GetMapping
 	public ResponseEntity<CepDto> getCep(@PathVariable String cepValue) {
 		System.out.println(cepValue + " tested");
 		CepDto cep = cepRepository.getCep(cepValue);

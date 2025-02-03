@@ -2,15 +2,13 @@ package com.example.finance.services;
 
 import com.example.finance.Repositories.*;
 import com.example.finance.models.entities.*;
-import com.example.finance.models.entities.dto.EstoqueMovimentoDto;
 import com.example.finance.models.entities.dto.VendaDto;
 import com.example.finance.models.entities.enums.TIPOMOVIMENTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,12 +28,12 @@ public class VendaService {
 	private final CarteiraMovimentoRepository carteiraMovimentoRepository;
 	private final CarteiraRepository carteiraRepository;
 	private final UserRepository userRepository;
-
+	private final EstoqueService estoqueService;
 	@Autowired
 	public VendaService(VendaRepository vendaRepository, TipoVendaRepository tipoVendaRepository, EntidadeRepository entidadeRepository,
 	                    VendaMovimentoRepository vendaMovimentoRepository, ProdutoRepository produtoRepository, EstoqueRepository estoqueRepository,
 	                    CarteiraRepository carteiraRepository, EstoqueMovimentoRepository estoqueMovimentoRepository,
-	                    CarteiraMovimentoRepository carteiraMovimentoRepository, UserRepository userRepository)
+	                    CarteiraMovimentoRepository carteiraMovimentoRepository, UserRepository userRepository, EstoqueService estoqueService)
 	{
 		this.vendaRepository = vendaRepository;
 		this.tipoVendaRepository = tipoVendaRepository;
@@ -47,16 +45,17 @@ public class VendaService {
 		this.estoqueMovimentoRepository = estoqueMovimentoRepository;
 		this.carteiraMovimentoRepository = carteiraMovimentoRepository;
 		this.userRepository = userRepository;
+		this.estoqueService = estoqueService;
 	}
 
 
-	public VendaEntity createVenda(VendaDto vendaDto) {
+	public VendaEntity createVenda(@Valid VendaDto vendaDto) throws Exception {
 		TipoVendaEntity tipoVenda = TipoVendaEntity.builder().nome("Saida").id(0).build();
-		UserEntity user = userRepository.findById(vendaDto.getUser()).orElseThrow(() -> new RuntimeException("User not found"));
-		EntidadeEntity entidade = entidadeRepository.findById(vendaDto.getEntidade()).orElseThrow(() -> new RuntimeException("Entidade not found"));
+		UserEntity user = userRepository.findById(vendaDto.user()).orElseThrow(() -> new Exception("User not found"));
+		EntidadeEntity entidade = entidadeRepository.findById(vendaDto.entidade()).orElseThrow(() -> new Exception("Entidade not found"));
 
 		VendaEntity vendaEntity = VendaEntity.builder()
-		                                     .valor(vendaDto.getValor())
+		                                     .valor(vendaDto.valor())
 		                                     .data(LocalDateTime.now())
 		                                     .tipoVenda(tipoVenda)
 		                                     .entidade(entidade)
@@ -73,10 +72,15 @@ public class VendaService {
 		user.getVenda().add(vendaSaved);
 		userRepository.save(user);
 
-		List<VendaMovimentoEntity> vendaMovimentoList = vendaDto.getVendaMovimento().stream().map(vendaMovimentoEntity -> {
+		List<VendaMovimentoEntity> vendaMovimentoList = vendaDto.vendaMovimento().stream().map(vendaMovimentoEntity -> {
 
-			ProdutoEntity produtoEntity = produtoRepository.findById(vendaMovimentoEntity.getProduto().getId())
-			                                               .orElseThrow(() -> new RuntimeException("Produto not found"));
+			ProdutoEntity produtoEntity = null;
+			try {
+				produtoEntity = produtoRepository.findById(vendaMovimentoEntity.getProduto().getId())
+				                                               .orElseThrow(() -> new Exception("Produto not found"));
+			} catch(Exception e) {
+				throw new RuntimeException(e);
+			}
 
 			produtoEntity.getEstoque()
 			             .getEstoqueMovimentoEntity()
@@ -84,7 +88,7 @@ public class VendaService {
 			                                        .quantidade(vendaMovimentoEntity.getQuantidade())
 			                                        .tipo(TIPOMOVIMENTO.SAIDA)
 			                                        .estoque(produtoEntity.getEstoque())
-					                                .vendaEntity(null)
+
 			                                        .id(0)
 			                                        .build());
 
@@ -109,7 +113,6 @@ public class VendaService {
 			carteiraMovimentoRepository.save(carteiraMovimentoUser);
 
 			EstoqueMovimentoEntity estoqueMovimento = EstoqueMovimentoEntity.builder()
-			                                                                .vendaEntity(vendaSaved)
 			                                                                .estoque(produtoEntity.getEstoque())
 			                                                                .quantidade(vendaMovimentoEntity.getQuantidade().negate())
 			                                                                .tipo(TIPOMOVIMENTO.SAIDA)
@@ -128,7 +131,7 @@ public class VendaService {
 		return vendaRepository.save(vendaSaved);
 	}
 
-	public TipoVendaEntity createTipoVenda(TipoVendaEntity tipoVendaEntity) {
+	public TipoVendaEntity createTipoVenda(@Valid TipoVendaEntity tipoVendaEntity) {
 		return tipoVendaRepository.save(tipoVendaEntity);
 	}
 
@@ -136,11 +139,11 @@ public class VendaService {
 		return tipoVendaRepository.findAll();
 	}
 
-	public Optional<TipoVendaEntity> getTipoVendaById(long id) {
-		return tipoVendaRepository.findById(id);
+	public TipoVendaEntity getTipoVendaById(long id) throws Exception {
+		return tipoVendaRepository.findById(id).orElseThrow(()-> new RuntimeException("TipoVenda not found"));
 	}
 
-	public EntidadeEntity createEntidade(EntidadeEntity entidadeEntity) {
+	public EntidadeEntity createEntidade(@Valid EntidadeEntity entidadeEntity) {
 		return entidadeRepository.save(entidadeEntity);
 	}
 
@@ -148,22 +151,21 @@ public class VendaService {
 		return vendaRepository.findAll();
 	}
 
-	public Optional<VendaEntity> getVendaById(long id) {
-		return vendaRepository.findById(id);
+	public VendaEntity getVendaById(long id) {
+		return vendaRepository.findById(id).orElseThrow(() -> new RuntimeException("Venda not found"));
 	}
 
-	public VendaEntity updateVenda(long id, VendaEntity vendaDetails) {
+	public VendaEntity updateVenda(long id, VendaEntity vendaDetails) throws Exception {
 		Optional<VendaEntity> optionalVenda = vendaRepository.findById(id);
-		if(optionalVenda.isPresent()) {
-			VendaEntity vendaEntity = optionalVenda.get();
-			vendaEntity.setValor(vendaDetails.getValor());
-			vendaEntity.setData(vendaDetails.getData());
-			vendaEntity.setTipoVenda(vendaDetails.getTipoVenda());
-			vendaEntity.setEntidade(vendaDetails.getEntidade());
-			return vendaRepository.save(vendaEntity);
-		} else {
-			return null; // or throw an exception
+		if(!optionalVenda.isPresent()) {
+			throw new Exception("Venda not found");
 		}
+		VendaEntity vendaEntity = optionalVenda.get();
+		vendaEntity.setValor(vendaDetails.getValor());
+		vendaEntity.setData(vendaDetails.getData());
+		vendaEntity.setTipoVenda(vendaDetails.getTipoVenda());
+		vendaEntity.setEntidade(vendaDetails.getEntidade());
+		return vendaRepository.save(vendaEntity);
 	}
 
 	public void deleteVenda(long id) {

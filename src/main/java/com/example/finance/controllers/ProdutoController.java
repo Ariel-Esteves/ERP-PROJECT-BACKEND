@@ -2,14 +2,13 @@ package com.example.finance.controllers;
 
 import com.example.finance.models.entities.ProdutoEntity;
 import com.example.finance.services.ProdutoService;
-import com.example.finance.services.VendaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/produto")
+@RequestMapping("produto")
 public class ProdutoController {
 
 	private final ProdutoService vendaService;

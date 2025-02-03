@@ -1,6 +1,5 @@
 package com.example.finance.services;
 
-import com.example.finance.Repositories.CarteiraRepository;
 import com.example.finance.Repositories.EntidadeRepository;
 import com.example.finance.Repositories.EntidadeTipoRepository;
 import com.example.finance.models.entities.CarteiraEntity;
@@ -8,10 +7,10 @@ import com.example.finance.models.entities.EnderecoEntity;
 import com.example.finance.models.entities.EntidadeEntity;
 import com.example.finance.models.entities.EntidadeTipoEntity;
 import com.example.finance.models.entities.dto.EntidadeDto;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,40 +28,39 @@ public class EntidadeService {
 		this.entidadeTipoRepository = entidadeTipoRepository;
 	}
 
-	public EntidadeEntity createEntidade(EntidadeDto entidadeDto) {
+	public EntidadeEntity createEntidade(@Valid EntidadeDto entidadeDto) {
 		EntidadeTipoEntity entidadeTipo = EntidadeTipoEntity.builder()
-						                                                   .id(0)
-		                                                   .nome(entidadeDto.getTipo())
+		                                                    .id(0)
+		                                                   .nome(entidadeDto.tipo())
 		                                                   .criacao(LocalDateTime.now()).build();
 		EnderecoEntity endereco = EnderecoEntity.builder()
 		                                        .id(0)
-		                                        .cidade(entidadeDto.getEndereco().getCidade())
-		                                        .uf(entidadeDto.getEndereco().getUf())
-												.rua(entidadeDto.getEndereco().getRua())
-				.numero(entidadeDto.getEndereco().getNumero())
-				.cep(entidadeDto.getEndereco().getCep())
-				.pais(entidadeDto.getEndereco().getPais()).build();
+		                                        .cidade(entidadeDto.endereco().getCidade())
+		                                        .uf(entidadeDto.endereco().getUf())
+												.rua(entidadeDto.endereco().getRua())
+				.numero(entidadeDto.endereco().getNumero())
+				.cep(entidadeDto.endereco().getCep())
+				.pais(entidadeDto.endereco().getPais()).build();
 
 		CarteiraEntity carteira = CarteiraEntity.builder()
 		                                        .entidade(null)
 		                                        .data(LocalDateTime.now())
 		                                        .valor(BigDecimal.ZERO)
-				.carteiraMovimentoEntity(new ArrayList<>())
+												.carteiraMovimentoEntity(new ArrayList<>())
 		                                        .id(0).build();
 
 		EntidadeEntity entidadeEntity = EntidadeEntity.builder()
-		                                              .nome(entidadeDto.getNome())
-		                                              .cpf(entidadeDto.getCpf())
+		                                              .nome(entidadeDto.nome())
+		                                              .cpf(entidadeDto.cpf())
 		                                              .entidadeTipo(entidadeTipo)
-		                                              .email(entidadeDto.getEmail())
+		                                              .email(entidadeDto.email())
 		                                              .endereco(endereco)
 		                                              .entidadeTipo(entidadeTipo)
 		                                              .venda(null)
-				.carteira(carteira)
+		                                              .carteira(carteira)
 		                                              .id(0).build();
 
 		return entidadeRepository.save(entidadeEntity);
-
 	}
 
 	public List<EntidadeEntity> getAllEntidades() {
@@ -73,20 +71,20 @@ public class EntidadeService {
 		return entidadeRepository.findById(id);
 	}
 
-	public EntidadeEntity updateEntidade(long id, EntidadeEntity entidadeDetails) {
+	public EntidadeEntity updateEntidade(long id, EntidadeEntity entidadeDetails) throws Exception {
 		Optional<EntidadeEntity> optionalEntidade = entidadeRepository.findById(id);
-		if (optionalEntidade.isPresent()) {
-			EntidadeEntity entidadeEntity = optionalEntidade.get();
-			entidadeEntity.setNome(entidadeDetails.getNome());
-			entidadeEntity.setCpf(entidadeDetails.getCpf());
-			entidadeEntity.setEmail(entidadeDetails.getEmail());
-			entidadeEntity.setEndereco(entidadeDetails.getEndereco());
-			entidadeEntity.setEntidadeTipo(entidadeDetails.getEntidadeTipo());
-			entidadeEntity.setVenda(entidadeDetails.getVenda());
-			return entidadeRepository.save(entidadeEntity);
-		} else {
-			return null; // or throw an exception
+		if (!optionalEntidade.isPresent()) {
+			throw new Exception("Entidade not found");
 		}
+
+		EntidadeEntity entidadeEntity = optionalEntidade.get();
+		entidadeEntity.setNome(entidadeDetails.getNome());
+		entidadeEntity.setCpf(entidadeDetails.getCpf());
+		entidadeEntity.setEmail(entidadeDetails.getEmail());
+		entidadeEntity.setEndereco(entidadeDetails.getEndereco());
+		entidadeEntity.setEntidadeTipo(entidadeDetails.getEntidadeTipo());
+		entidadeEntity.setVenda(entidadeDetails.getVenda());
+		return entidadeRepository.save(entidadeEntity);
 	}
 
 	public void deleteEntidade(long id) {
@@ -99,7 +97,7 @@ public class EntidadeService {
 		return entidadeTipoRepository.findAll();
 	}
 
-	public EntidadeTipoEntity createEntidadeTipo(EntidadeTipoEntity entidadeTipoEntity) {
+	public EntidadeTipoEntity createEntidadeTipo(@Valid EntidadeTipoEntity entidadeTipoEntity) {
 		entidadeTipoEntity.setCriacao(LocalDateTime.now());
 		return entidadeTipoRepository.save(entidadeTipoEntity);
 	}

@@ -1,8 +1,8 @@
 package com.example.finance.controllers;
 
-import com.example.finance.models.entities.*;
-import com.example.finance.models.entities.dto.CarteiraMovimentoDto;
-import com.example.finance.models.entities.dto.EstoqueMovimentoDto;
+import com.example.finance.models.entities.TipoVendaEntity;
+import com.example.finance.models.entities.VendaEntity;
+import com.example.finance.models.entities.VendaMovimentoEntity;
 import com.example.finance.models.entities.dto.VendaDto;
 import com.example.finance.services.CarteiraService;
 import com.example.finance.services.VendaService;
@@ -10,15 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("api")
 public class VendaController {
 	private final VendaService vendaService;
 	private final CarteiraService carteiraService;
+
 	@Autowired
 	public VendaController(VendaService vendaService, CarteiraService carteiraService) {
 		this.vendaService = vendaService;
@@ -26,7 +25,7 @@ public class VendaController {
 	}
 
 	@PostMapping("/vendas")
-	public ResponseEntity<?> createVenda(@RequestBody VendaDto vendaDto) {
+	public ResponseEntity<?> createVenda(@RequestBody VendaDto vendaDto) throws Exception {
 		VendaEntity createdVenda = vendaService.createVenda(vendaDto);
 		return ResponseEntity.ok(createdVenda);
 	}
@@ -39,14 +38,14 @@ public class VendaController {
 
 	@GetMapping("/vendas/{id}")
 	public ResponseEntity<VendaEntity> getVendaById(@PathVariable long id) {
-		Optional<VendaEntity> venda = vendaService.getVendaById(id);
-		return venda.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+
+		return ResponseEntity.ok(vendaService.getVendaById(id));
 	}
 
 	@PutMapping("/vendas/{id}")
-	public ResponseEntity<VendaEntity> updateVenda(@PathVariable long id, @RequestBody VendaEntity vendaDetails) {
+	public ResponseEntity<VendaEntity> updateVenda(@PathVariable long id, @RequestBody VendaEntity vendaDetails) throws Exception {
 		VendaEntity updatedVenda = vendaService.updateVenda(id, vendaDetails);
-		if (updatedVenda != null) {
+		if(updatedVenda != null) {
 			return ResponseEntity.ok(updatedVenda);
 		} else {
 			return ResponseEntity.notFound().build();

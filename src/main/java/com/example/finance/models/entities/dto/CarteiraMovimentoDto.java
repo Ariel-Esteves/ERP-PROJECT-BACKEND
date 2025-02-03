@@ -2,19 +2,14 @@ package com.example.finance.models.entities.dto;
 
 import com.example.finance.models.entities.UserEntity;
 import com.example.finance.models.entities.VendaEntity;
-import lombok.*;
+import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class CarteiraMovimentoDto {
-	//id from carteira
-	private long id;
-	private BigDecimal valor;
-	private VendaEntity venda;
-	private UserEntity user;
-}
+public record CarteiraMovimentoDto(
+		long id,
+		@NotNull
+		BigDecimal valor,
+		VendaEntity venda,
+		UserEntity user
+) {}

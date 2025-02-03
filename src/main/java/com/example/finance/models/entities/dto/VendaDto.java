@@ -1,19 +1,20 @@
 package com.example.finance.models.entities.dto;
 
 import com.example.finance.models.entities.VendaMovimentoEntity;
-import lombok.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.util.List;
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class VendaDto {
-	private BigDecimal Valor;
-	private long tipoVenda;
-	private long entidade;
-	private List<VendaMovimentoEntity> vendaMovimento;
-	private long user;
-}
+
+public record VendaDto(
+		@NotNull
+		BigDecimal valor,
+		long tipoVenda,
+		@NotNull
+		long entidade,
+		@NotEmpty
+		List<VendaMovimentoEntity> vendaMovimento,
+		@NotNull
+		long user
+) {}

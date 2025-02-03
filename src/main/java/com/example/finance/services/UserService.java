@@ -4,6 +4,7 @@ import com.example.finance.Repositories.CarteiraRepository;
 import com.example.finance.Repositories.UserRepository;
 import com.example.finance.models.entities.CarteiraEntity;
 import com.example.finance.models.entities.UserEntity;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,7 @@ public class UserService {
 		this.carteiraRepository = carteiraRepository;
 	}
 
-	public UserEntity createUser(UserEntity userEntity) {
+	public UserEntity createUser(@Valid UserEntity userEntity) {
 		UserEntity userSaved = userRepository.save(userEntity);
 		// create user
 		CarteiraEntity carteira = CarteiraEntity.builder()
@@ -34,7 +35,9 @@ public class UserService {
 		                                        .user(userSaved)
 		                                        .id(0)
 		                                        .build();
+
 		CarteiraEntity carteiraSaved = carteiraRepository.save(carteira);
+
 		userEntity.setCarteira(carteiraSaved);
 
 		return userRepository.save(userSaved);

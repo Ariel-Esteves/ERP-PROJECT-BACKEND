@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api")
+@RequestMapping("carteira")
 public class CarteiraController {
 	private final CarteiraService CarteiraService;
 	@Autowired
@@ -16,24 +16,24 @@ public class CarteiraController {
 		this.CarteiraService = carteiraService;
 	}
 
-	@PostMapping("/carteira")
+	@PostMapping("")
 	public ResponseEntity<CarteiraEntity> createCarteira(@RequestBody CarteiraMovimentoDto carteiraMovimentoDto) {
 		return ResponseEntity.ok(CarteiraService.createCarteira(carteiraMovimentoDto));
 	}
 
-	@GetMapping("/carteira/{id}")
+	@GetMapping("/{id}")
 	public ResponseEntity<CarteiraEntity> getCarteira(@PathVariable long id) {
 		return ResponseEntity.ok(CarteiraService.getCarteira(id).orElse(null));
 	}
 
-	@DeleteMapping("/carteira/{id}")
+	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteCarteira(@PathVariable long id) {
 		CarteiraService.deleteCarteira(id);
 		return ResponseEntity.noContent().build();
 	}
 
-	@PostMapping("/carteira/movimento")
-	public ResponseEntity<CarteiraEntity> postCarteiraMovimento(@RequestBody CarteiraMovimentoDto carteiraMovimentoDto) {
-		return ResponseEntity.ok(CarteiraService.postCarteiraMovimento(carteiraMovimentoDto));
+	@PostMapping("/movimento")
+	public ResponseEntity<CarteiraEntity> createCarteiraMovimento(@RequestBody CarteiraMovimentoDto carteiraMovimentoDto) throws Exception {
+		return ResponseEntity.ok(CarteiraService.createCarteiraMovimento(carteiraMovimentoDto));
 	}
 }

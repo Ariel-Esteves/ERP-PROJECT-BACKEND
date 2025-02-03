@@ -1,19 +1,22 @@
 package com.example.finance.models.entities.dto;
 
 import com.example.finance.models.entities.EnderecoEntity;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class EntidadeDto {
-	private String nome;
-	private String cpf;
-	private String email;
-	private EnderecoEntity endereco;
-	private String tipo;
-	private long user;
-}
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.br.CPF;
+
+public record EntidadeDto(
+		@NotBlank
+		String nome,
+		@CPF
+		String cpf,
+		@Email
+		String email,
+		@NotNull
+		EnderecoEntity endereco,
+		@NotEmpty
+		String tipo,
+		long user
+) {}

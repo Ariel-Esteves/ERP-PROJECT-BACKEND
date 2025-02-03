@@ -1,17 +1,16 @@
 package com.example.finance.models.entities.dto;
 
-import lombok.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class ProdutoDto {
-	private String nome;
-	private BigDecimal valor;
-	private BigDecimal quantidade;
-	private long estoque;
-}
+public record ProdutoDto(
+		@NotEmpty
+		String nome,
+		@NotNull
+		BigDecimal valor,
+		@NotNull
+		BigDecimal quantidade,
+		long estoque
+) {}

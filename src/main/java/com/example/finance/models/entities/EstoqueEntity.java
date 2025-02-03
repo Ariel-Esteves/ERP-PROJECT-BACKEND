@@ -2,6 +2,7 @@ package com.example.finance.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -20,7 +21,9 @@ public class EstoqueEntity {
 	private long id;
 	@OneToOne
 	@JsonBackReference
+	@NotNull
 	private ProdutoEntity produto;
+	@NotNull
 	private BigDecimal quantidade;
 	private LocalDateTime data;
 	@OneToMany(cascade = CascadeType.ALL)

@@ -4,6 +4,7 @@ import com.example.finance.Repositories.EstoqueRepository;
 import com.example.finance.Repositories.ProdutoRepository;
 import com.example.finance.models.entities.EstoqueEntity;
 import com.example.finance.models.entities.ProdutoEntity;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -21,7 +22,7 @@ public class ProdutoService {
 		this.estoqueRepository = estoqueRepository;
 	}
 
-	public ProdutoEntity createProduto(ProdutoEntity produtoEntity) {
+	public ProdutoEntity createProduto(@Valid ProdutoEntity produtoEntity) {
 		ProdutoEntity produtoSaved = produtoRepository.save(produtoEntity);
 		EstoqueEntity estoque = EstoqueEntity.builder()
 		                                     .quantidade(BigDecimal.ZERO)

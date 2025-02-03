@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/entidade")
+@RequestMapping("entidade")
 public class EntidadeController {
 
 	private final EntidadeService entidadeService;
@@ -41,7 +41,7 @@ public class EntidadeController {
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<EntidadeEntity> updateEntidade(@PathVariable long id, @RequestBody EntidadeEntity entidadeDetails) {
+	public ResponseEntity<EntidadeEntity> updateEntidade(@PathVariable long id, @RequestBody EntidadeEntity entidadeDetails) throws Exception {
 		EntidadeEntity updatedEntidade = entidadeService.updateEntidade(id, entidadeDetails);
 		if (updatedEntidade != null) {
 			return ResponseEntity.ok(updatedEntidade);
