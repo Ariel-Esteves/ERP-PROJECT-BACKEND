@@ -1,6 +1,5 @@
 package com.example.finance.infra.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,30 +16,37 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class SecurityConfigurations {
-	@Autowired
 	SecurityFilter securityFilter;
-
+	
+	SecurityConfigurations(SecurityFilter securityFilter) {
+		this.securityFilter = securityFilter;
+	}
+	
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 		return httpSecurity.csrf(csrf -> csrf.disable())
 		                   .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-		                   .authorizeHttpRequests(authorize -> authorize.requestMatchers(HttpMethod.POST, "/homepage", "/auth/register", "/auth/login")
+		                   .authorizeHttpRequests(authorize -> authorize.requestMatchers(HttpMethod.POST, "/auth/login")
 		                                                                .permitAll()
-		                                                                .requestMatchers(HttpMethod.GET, "/homepage", "/auth/register", "/auth/login")
+		                                                                .requestMatchers(HttpMethod.POST, "/auth/register")
 		                                                                .permitAll()
-		                                                                .requestMatchers(HttpMethod.POST, "/produto", "/entidade", "/vendas", "/user")
+		                                                                .requestMatchers(HttpMethod.POST, "/product", "/user", "/wallet", "/person", "/sale",
+		                                                                                 "/stock")
+		                                                                .hasRole("USER")
+		                                                                .requestMatchers(HttpMethod.GET, "/product", "/user", "/wallet", "/person", "/sale",
+		                                                                                 "/stock")
 		                                                                .hasRole("USER")
 		                                                                .anyRequest()
 		                                                                .authenticated())
 		                   .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
 		                   .build();
 	}
-
+	
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
 		return authenticationConfiguration.getAuthenticationManager();
 	}
-
+	
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();

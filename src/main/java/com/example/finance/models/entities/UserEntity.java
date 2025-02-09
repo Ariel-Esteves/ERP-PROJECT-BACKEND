@@ -1,10 +1,7 @@
 package com.example.finance.models.entities;
 
 import com.example.finance.models.entities.enums.USERROLE;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,38 +11,34 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
+@NoArgsConstructor
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
-@Builder
+@EqualsAndHashCode(of = "id")
 public class UserEntity implements UserDetails {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private long id;
-	@NotBlank
+	
 	private String login;
-	@NotNull
+	
 	private String password;
-
 	private USERROLE role;
+
 	private String token;
 	private String refreshToken;
 	private String status;
-	@OneToOne
-	private EnderecoEntity endereco;
-	@OneToOne
-	@JsonManagedReference("user-carteira")
-	private CarteiraEntity carteira;
-	@OneToMany
-	@JsonManagedReference("user-venda")
-	private List<VendaEntity> venda;
 
-	public UserEntity(String login, String password, USERROLE role){
+	@OneToOne
+	private PersonEntity person;
+
+	public UserEntity(String login, String password, USERROLE role) {
 		this.login = login;
 		this.password = password;
 		this.role = role;
 	}
+
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		if(this.role == USERROLE.ADMIN) {
@@ -79,4 +72,10 @@ public class UserEntity implements UserDetails {
 	public boolean isEnabled() {
 		return UserDetails.super.isEnabled();
 	}
+
+	@Override
+	public String getPassword() {
+		return this.password;
+	}
+	
 }

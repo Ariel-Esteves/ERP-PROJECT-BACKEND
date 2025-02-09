@@ -19,7 +19,6 @@ public class CepController {
 	}
 	@GetMapping
 	public ResponseEntity<CepDto> getCep(@PathVariable String cepValue) {
-		System.out.println(cepValue + " tested");
 		CepDto cep = cepRepository.getCep(cepValue);
 		return ResponseEntity.ok(cep);
 	}

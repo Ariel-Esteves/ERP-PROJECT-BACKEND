@@ -24,7 +24,7 @@ public class UserController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<UserEntity> findUser(@PathVariable long id){
-		return ResponseEntity.ok(userService.fincUser(id));
+		return ResponseEntity.ok(userService.findByUserId(id));
 	}
 
 	@DeleteMapping("/{id}")

@@ -16,28 +16,36 @@ import java.time.ZoneOffset;
 public class TokenService {
 	@Value("${api.security.token.secret}")
 	private String secret;
-
+	
 	public String generateToken(UserEntity user) {
 		try {
 			Algorithm algorithm = Algorithm.HMAC256(secret);
-			String token = JWT.create().withIssuer("Ariel").withSubject(user.getLogin()).withExpiresAt(generateExpirationDate()).sign(algorithm);
-			return token;
+			return JWT.create()
+			                  .withIssuer("ariel")
+			                  .withSubject(user.getLogin())
+			                  .withExpiresAt(generateExpirationDate())
+			                  .sign(algorithm);
+			
 		} catch(JWTCreationException e) {
 			throw new RuntimeException("Erro ao gerar token", e);
 		}
 	}
-
-	public String ValidateToken(String token) {
+	
+	public String validateToken(String token) {
 		try {
 			Algorithm algorithm = Algorithm.HMAC256(secret);
-			return JWT.require(algorithm).withIssuer("Ariel").build().verify(token).getSubject();
-
+			return JWT.require(algorithm)
+			          .withIssuer("ariel")
+			          .build()
+			          .verify(token)
+			          .getSubject();
+			
 		} catch(JWTVerificationException e) {
 			throw new RuntimeException("Token inválido", e);
 		}
 	}
-
+	
 	private Instant generateExpirationDate() {
-		return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.UTC);
+		return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
 	}
 }

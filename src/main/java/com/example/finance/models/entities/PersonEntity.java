@@ -1,0 +1,46 @@
+package com.example.finance.models.entities;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.List;
+
+@Entity
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class PersonEntity {
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private long id;
+	
+	private String name;
+	
+	private String cpf;
+	
+	private String email;
+	@ManyToOne(cascade=CascadeType.ALL)
+	
+	private AddressEntity address;
+	@ManyToOne(cascade=CascadeType.ALL)
+	private PersonTypeEntity personType;
+	@OneToMany(fetch=FetchType.LAZY)
+	@JsonManagedReference("sale-person")
+	private List<SaleEntity> sales;
+	@OneToOne(cascade=CascadeType.ALL)
+	@JsonManagedReference
+	
+	private WalletEntity wallet;
+	@OneToOne
+	private UserEntity userEntity;
+	
+	@Override
+	public String toString() {
+		return this.name;
+	}
+	
+	
+}
