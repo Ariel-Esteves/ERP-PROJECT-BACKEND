@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -27,8 +28,8 @@ public class SaleEntity {
 	@JsonBackReference("sale-person")
 	private PersonEntity person;
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private List<MovementSaleEntity> movementSale;
+	private List<MovementSaleEntity> movementSales = new ArrayList<>();
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private List<MovementWalletEntity> movementWallet;
+	private List<MovementWalletEntity> movementWallet = new ArrayList<>();
 
 }

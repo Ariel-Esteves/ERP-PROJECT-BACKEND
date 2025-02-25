@@ -2,15 +2,23 @@ package com.example.finance.services;
 
 import com.example.finance.Repositories.*;
 import com.example.finance.models.entities.*;
+import com.example.finance.models.entities.dto.MapperDto;
 import com.example.finance.models.entities.dto.MovementSaleDto;
+import com.example.finance.models.entities.dto.MovementWalletDto;
 import com.example.finance.models.entities.dto.SaleDto;
+import com.example.finance.models.entities.enums.MOVEMENTYPE;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionSystemException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class SaleService {
@@ -21,11 +29,11 @@ public class SaleService {
 	private final MovementSalesRepository movementSalesRepository;
 	private final ProductService productService;
 	private final StockRepository stockRepository;
-	
+	private final WalletRepository walletRepository;
 	private final MovementStockRepository stockMovementRepository;
 	
 	private final MovementWalletRepository movementWalletRepository;
-	private final WalletRepository walletRepository;
+	private final WalletService walletService;
 	private final UserRepository userRepository;
 	private final StockService stockService;
 	private final PersonRepository personRepository;
@@ -33,8 +41,8 @@ public class SaleService {
 	@Autowired
 	public SaleService(SalesRepository salesRepository, SalesTypeRepository salesTypeRepository, PersonService personService,
 	                   MovementSalesRepository movementSalesRepository, ProductService productService, StockRepository stockRepository,
-	                   WalletRepository walletRepository, MovementStockRepository stockMovementRepository, MovementWalletRepository movementWalletRepository,
-	                   UserRepository userRepository, StockService stockService, PersonRepository personRepository)
+	                   WalletService walletService, MovementStockRepository stockMovementRepository, MovementWalletRepository movementWalletRepository,
+	                   UserRepository userRepository, StockService stockService, PersonRepository personRepository, WalletRepository walletRepository)
 	{
 		this.salesRepository = salesRepository;
 		this.salesTypeRepository = salesTypeRepository;
@@ -42,40 +50,26 @@ public class SaleService {
 		this.movementSalesRepository = movementSalesRepository;
 		this.productService = productService;
 		this.stockRepository = stockRepository;
-		this.walletRepository = walletRepository;
+		this.walletService = walletService;
 		this.stockMovementRepository = stockMovementRepository;
 		this.movementWalletRepository = movementWalletRepository;
 		this.userRepository = userRepository;
 		this.stockService = stockService;
 		this.personRepository = personRepository;
+		this.walletRepository = walletRepository;
 	}
 	
+	@PostConstruct
+	private void createSaleType() {
+		List.of("in", "out").forEach(name -> salesTypeRepository.save(SaleTypeEntity.builder().name(name).id(0).build()));
+		
+	}
 	
 	public SaleDto createSale(@Valid SaleDto saleDto) {
 		PersonEntity person = personRepository.findById(saleDto.person()).orElseThrow(() -> new EntityNotFoundException("Person not found"));
 		SaleTypeEntity type = SaleTypeEntity.builder().name("out").id(0).build();
-		UserEntity user = userRepository.findById(saleDto.user()).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		
-		List<MovementWalletEntity> movementWallet = List.of(MovementWalletEntity.builder()
-		                                                                        .paymentValue(saleDto.paymentValue())
-		                                                                        .wallet(walletRepository.findById(person.getWallet().getId())
-		                                                                                                .orElseThrow(() -> new EntityNotFoundException(
-				                                                                                                "Wallet not found")))
-		                                                                        .id(0)
-		                                                                        .build(),
-		
-		                                                    MovementWalletEntity.builder()
-		                                                                        .paymentValue(saleDto.paymentValue())
-		                                                                        /*.wallet(walletRepository.findById(user.getPerson().getWallet().getId())
-																										.orElseThrow(() -> new EntityNotFoundException(
-																												"Wallet not found"))) */.wallet(
-				                                                                        walletRepository.findById(person.getWallet().getId())
-				                                                                                        .orElseThrow(() -> new EntityNotFoundException("Wallet not found")))
-		                                                                        .id(0)
-		                                                                        .build());
-		
-		
-		List<MovementSaleEntity> movementSaleEntity = saleDto.movementSale().stream().map(movementSaleDto -> {
+		ArrayList<MovementSaleEntity> movementSaleEntity = saleDto.movementSale().stream().map(movementSaleDto -> {
 			ProductEntity productFound = productService.findProduct(movementSaleDto.product());
 			
 			return MovementSaleEntity.builder()
@@ -84,21 +78,36 @@ public class SaleService {
 			                         .product(productFound)
 			                         .id(0)
 			                         .build();
-		}).toList();
+		}).collect(Collectors.toCollection(ArrayList::new));
 		
 		SaleEntity saleSaved = salesRepository.save(SaleEntity.builder()
 		                                                      .data(LocalDateTime.now())
 		                                                      .paymentValue(saleDto.paymentValue())
 		                                                      .person(person)
 		                                                      .saleType(type)
-		                                                      .movementSale(movementSaleEntity)
-		                                                      .movementWallet(movementWallet)
+		                                                      .movementSales(movementSaleEntity)
 		                                                      .id(0)
 		                                                      .build());
 		
-		return new SaleDto(saleSaved.getPaymentValue(), saleSaved.getSaleType().getId(), saleSaved.getPerson().getId(), saleDto.user(),
-		                   saleSaved.getMovementSale().stream().map(e -> new MovementSaleDto(e.getId(), e.getPaymentValue(), e.getQuantity())).toList()
-		                   );
+		WalletEntity wallet = walletService.findWalletByPersonId(person.getId());
+		
+		MovementWalletEntity movementWallet = MovementWalletEntity.builder()
+		                                                          .data(LocalDateTime.now())
+		                                                          .paymentValue(saleDto.paymentValue())
+		                                                          .movementType(MOVEMENTYPE.ENTRADA)
+		                                                          .sale(saleSaved)
+		                                                          .wallet(wallet)
+		                                                          .id(0)
+		                                                          .build();
+		
+		wallet.getMovementWalletEntity().add(movementWallet);
+		wallet.setBalance(wallet.getBalance().add(saleDto.paymentValue()));
+		walletRepository.save(wallet);
+		
+		saleSaved.setMovementWallet(new ArrayList<>(Arrays.asList(movementWallet)));
+		salesRepository.save(saleSaved);
+		
+		return MapperDto.convertToSaleDto(saleSaved);
 	}
 	
 	public SaleTypeEntity createSaleType(@Valid SaleTypeEntity saleTypeEntity) {
@@ -114,8 +123,8 @@ public class SaleService {
 	}
 	
 	
-	public List<SaleEntity> getAllSales() {
-		return salesRepository.findAll();
+	public List<SaleDto> getAllSales() {
+		return salesRepository.findAll().stream().map(MapperDto::convertToSaleDto).toList();
 	}
 	
 	public SaleEntity getSaleById(long id) {
@@ -138,6 +147,4 @@ public class SaleService {
 	public List<MovementSaleEntity> getMovementSales() {
 		return movementSalesRepository.findAll();
 	}
-	
-	
 }

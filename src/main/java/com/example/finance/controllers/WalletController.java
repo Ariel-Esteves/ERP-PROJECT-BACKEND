@@ -11,30 +11,37 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("wallet")
 public class WalletController {
-	private final WalletService WalletService;
+	private final WalletService walletService;
+	
 	@Autowired
-	WalletController(WalletService walletService){
-		this.WalletService = walletService;
+	WalletController(WalletService walletService) {
+		this.walletService = walletService;
 	}
-
-	@PostMapping("")
-	public ResponseEntity<WalletEntity> createCarteira(@RequestBody WalletDto walletDto) {
-		return ResponseEntity.ok(WalletService.createCarteira(walletDto.person()));
+	
+	@PostMapping()
+	public ResponseEntity<WalletEntity> createWallet(@RequestBody WalletDto walletDto) {
+		return ResponseEntity.ok(walletService.createWallet(walletDto.person()));
 	}
-
+	
 	@GetMapping("/{id}")
-	public ResponseEntity<WalletEntity> getCarteira(@PathVariable long id) throws ClassNotFoundException {
-		return ResponseEntity.ok(WalletService.getCarteira(id).orElse(null));
+	public ResponseEntity<WalletEntity> getWallet(@PathVariable long id) {
+		return ResponseEntity.ok(walletService.getWallet(id));
 	}
-
+	
+	
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deleteCarteira(@PathVariable long id) {
-		WalletService.deleteCarteira(id);
+	public ResponseEntity<Void> deleteWallet(@PathVariable long id) {
+		walletService.deleteWallet(id);
 		return ResponseEntity.noContent().build();
 	}
-
-	@PostMapping("/movimento")
-	public ResponseEntity<WalletEntity> createCarteiraMovimento(@RequestBody MovementWalletDto movementWalletDto) throws Exception {
-		return ResponseEntity.ok(WalletService.createCarteiraMovimento(movementWalletDto));
+	
+	@PostMapping("/movement")
+	public ResponseEntity<WalletEntity> createWalletMovimento(@RequestBody MovementWalletDto movementWalletDto) throws Exception {
+		return ResponseEntity.ok(walletService.createWalletMovement(movementWalletDto));
+	}
+	
+	@GetMapping("/person/{id}")
+	public ResponseEntity<WalletEntity> getWalletByPersonId(@PathVariable long id) {
+		return ResponseEntity.ok(walletService.findWalletByPersonId(id));
 	}
 }

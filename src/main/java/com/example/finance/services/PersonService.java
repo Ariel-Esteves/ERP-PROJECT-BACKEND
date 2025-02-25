@@ -3,6 +3,7 @@ package com.example.finance.services;
 import com.example.finance.Repositories.PersonRepository;
 import com.example.finance.Repositories.PersonTypeRepository;
 import com.example.finance.models.entities.*;
+import com.example.finance.models.entities.dto.MapperDto;
 import com.example.finance.models.entities.dto.PersonDto;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
@@ -26,13 +27,13 @@ public class PersonService {
 	}
 	
 	public PersonDto createPerson(@Valid PersonDto personDto) {
-		UserEntity user = userService.findByUserId(personDto.user());
+		UserEntity user = personDto.user() != null ? userService.findByUserName(personDto.user()) : null;
 		
-		PersonTypeEntity personType = convertToPersonTypeEntity(personDto);
+		PersonTypeEntity personType = MapperDto.convertToPersonTypeEntity(personDto);
 		
-		AddressEntity address = convertToAddressEntity(personDto);
+		AddressEntity address = MapperDto.convertToAddressEntity(personDto);
 		
-		WalletEntity wallet = convertToWalletEntity(personDto);
+		WalletEntity wallet = MapperDto.convertToWalletEntity(personDto);
 		
 		PersonEntity personEntity = PersonEntity.builder()
 		                                        .name(personDto.name())
@@ -49,15 +50,15 @@ public class PersonService {
 		
 		PersonEntity personSaved = personRepository.save(personEntity);
 		
-		return convertToPersonDto(personSaved);
+		return MapperDto.convertToPersonDto(personSaved);
 	}
 	
 	public List<PersonDto> getAllPersons() {
-	    return personRepository.findAll().stream().map(this::convertToPersonDto).toList();
+	    return personRepository.findAll().stream().map(MapperDto::convertToPersonDto).toList();
 	}
 	
 	public PersonDto getPersonById(long id) {
-		return convertToPersonDto(personRepository.findById(id).orElseThrow(() -> new RuntimeException("Person not found")));
+		return MapperDto.convertToPersonDto(personRepository.findById(id).orElseThrow(() -> new RuntimeException("Person not found")));
 	}
 	
 	public void deletePerson(long id) {
@@ -75,7 +76,7 @@ public class PersonService {
 	}
 	
 	public PersonDto findByPersonId(long id) {
-		return convertToPersonDto(personRepository.findById(id).orElseThrow(() -> new RuntimeException("Person not found")));
+		return MapperDto.convertToPersonDto(personRepository.findById(id).orElseThrow(() -> new RuntimeException("Person not found")));
 	}
 	
 	public PersonEntity findByPersonEntityId(long id) {
@@ -83,28 +84,7 @@ public class PersonService {
 	}
 	
 	
-	public PersonTypeEntity convertToPersonTypeEntity(PersonDto personDto) {
-		return PersonTypeEntity.builder().id(0).name(personDto.personType()).creation(LocalDateTime.now()).build();
-	}
 	
-	public AddressEntity convertToAddressEntity(PersonDto personDto) {
-		return AddressEntity.builder()
-		                    .id(0)
-		                    .city(personDto.address().getCity())
-		                    .uf(personDto.address().getUf())
-		                    .street(personDto.address().getStreet())
-		                    .number(personDto.address().getNumber())
-		                    .cep(personDto.address().getCep())
-		                    .country(personDto.address().getCountry())
-		                    .build();
-	}
 	
-	public WalletEntity convertToWalletEntity(PersonDto personDto) {
-		return WalletEntity.builder().person(null).dateTime(LocalDateTime.now()).balance(BigDecimal.ZERO).movementWalletEntity(new ArrayList<>()).id(0).build();
-	}
-	
-	public PersonDto convertToPersonDto(PersonEntity personSaved) {
-		return new PersonDto(personSaved.getName(), personSaved.getCpf(), personSaved.getEmail(), personSaved.getAddress(),
-		                     personSaved.getPersonType().getName(), personSaved.getUserEntity().getId());
-	}
+
 }

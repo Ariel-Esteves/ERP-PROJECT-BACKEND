@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.br.CPF;
 
 public record PersonDto(
+		long id,
 		@NotBlank
 		String name,
 		@CPF
@@ -17,5 +18,7 @@ public record PersonDto(
 		@NotNull AddressEntity address,
 		@NotEmpty
 		String personType,
-		long user
+		String user,
+		
+		long wallet
 ) {}

@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -26,5 +27,5 @@ public class StockEntity {
 	private BigDecimal quantity;
 	private LocalDateTime data;
 	@OneToMany(cascade = CascadeType.ALL)
-	private List<MovementStockEntity> movementStockEntity;
+	private List<MovementStockEntity> movementStockEntity = new ArrayList<>();
 }

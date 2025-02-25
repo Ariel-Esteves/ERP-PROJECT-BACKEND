@@ -11,5 +11,6 @@ public record MovementWalletDto(
 		@NotNull
 		BigDecimal paymentValue,
 		LocalDateTime dateTime,
-		SaleEntity sale
+		long sale,
+		String movementType
 ) {}

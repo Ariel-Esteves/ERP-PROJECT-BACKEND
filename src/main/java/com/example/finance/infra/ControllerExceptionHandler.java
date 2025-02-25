@@ -53,4 +53,11 @@ public class ControllerExceptionHandler {
 		return ResponseEntity.badRequest().body(exceptionDTO);
 	}
 	
+	@ExceptionHandler(IllegalAccessException.class)
+	public ResponseEntity<ExceptionDTO> illegalAccessException(HttpMessageNotReadableException e) {
+		
+		ExceptionDTO exceptionDTO = new ExceptionDTO("Acesso ilegal", "400", e.getMessage());
+		return ResponseEntity.badRequest().body(exceptionDTO);
+	}
+	
 }

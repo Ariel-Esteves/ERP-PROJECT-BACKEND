@@ -2,6 +2,7 @@ package com.example.finance.models.entities;
 
 import com.example.finance.models.entities.enums.MOVEMENTYPE;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,7 +29,6 @@ public class MovementWalletEntity {
 	@JsonBackReference
 	private WalletEntity wallet;
 	@ManyToOne
-
 	private SaleEntity sale;
 
 }

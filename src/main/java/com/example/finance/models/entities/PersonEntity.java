@@ -30,9 +30,9 @@ public class PersonEntity {
 	@OneToMany(fetch=FetchType.LAZY)
 	@JsonManagedReference("sale-person")
 	private List<SaleEntity> sales;
-	@OneToOne(cascade=CascadeType.ALL)
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "wallet_id", referencedColumnName = "id")
 	@JsonManagedReference
-	
 	private WalletEntity wallet;
 	@OneToOne
 	private UserEntity userEntity;
