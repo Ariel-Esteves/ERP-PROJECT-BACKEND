@@ -20,7 +20,7 @@ public class MapperDto {
 	}
 	
 	public static WalletEntity convertToWalletEntity(PersonDto personDto) {
-		return WalletEntity.builder().person(null).dateTime(LocalDateTime.now()).balance(BigDecimal.ZERO).movementWalletEntity(new ArrayList<>()).id(0).build();
+		return WalletEntity.builder().person(null).dateTime(LocalDateTime.now()).balance(BigDecimal.ZERO).movement(new ArrayList<>()).id(0).build();
 	}
 	
 	public static PersonDto convertToPersonDto(PersonEntity personSaved) {

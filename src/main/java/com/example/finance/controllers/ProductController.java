@@ -32,4 +32,9 @@ public class ProductController {
 		vendaService.deleteProduct(id);
 		return ResponseEntity.noContent().build();
 	}
+	
+	@GetMapping("/{id}")
+	public ResponseEntity<ProductEntity> findProduct(@PathVariable long id) {
+		return ResponseEntity.ok(vendaService.findProduct(id));
+	}
 }

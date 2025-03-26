@@ -68,4 +68,7 @@ public class StockService {
 	public StockEntity findById(long id) {
 		return stockRepository.findById(id).orElseThrow(() -> new RuntimeException("Stock not found"));
 	}
+	public StockEntity findStockByProductId(long id) {
+		return stockRepository.findByProductId(id).orElseThrow(() -> new RuntimeException("Stock not found"));
+	}
 }

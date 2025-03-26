@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -72,4 +73,8 @@ public class SaleController {
 		return ResponseEntity.ok(createdSaleType);
 	}
 	
+	@GetMapping("/person/{id}")
+	public ResponseEntity<ArrayList<SaleDto>> findByPersonId(@PathVariable long id) {
+		return ResponseEntity.ok(saleService.findByPersonId(id));
+	}
 }

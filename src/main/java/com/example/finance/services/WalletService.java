@@ -59,7 +59,7 @@ public class WalletService {
 		                                                                .id(0L)
 		                                                                .build();
 
-		walletEntity.getMovementWalletEntity().add(movementWalletEntity);
+		walletEntity.getMovement().add(movementWalletEntity);
 		return walletRepository.save(walletEntity);
 	}
 	

@@ -100,11 +100,24 @@ public class SaleService {
 		                                                          .id(0)
 		                                                          .build();
 		
-		wallet.getMovementWalletEntity().add(movementWallet);
+		wallet.getMovement().add(movementWallet);
 		wallet.setBalance(wallet.getBalance().add(saleDto.paymentValue()));
 		walletRepository.save(wallet);
 		
 		saleSaved.setMovementWallet(new ArrayList<>(Arrays.asList(movementWallet)));
+		
+		saleDto.movementSale().forEach((product) -> {
+				StockEntity stock = productService.findProduct(product.product()).getStock();
+			MovementStockEntity stockMovement = MovementStockEntity.builder()
+			                                                       .quantity(product.quantity().negate())
+			                                                       .movementType(MOVEMENTYPE.SAIDA)
+			                                                       .stock(stock)
+			                                                       .id(0)
+			                                                       .build();
+			stock.getMovementStockEntity().add(stockMovement);
+			stock.setQuantity(stock.getQuantity().subtract(product.quantity()));
+			stockRepository.save(stock);
+		});
 		salesRepository.save(saleSaved);
 		
 		return MapperDto.convertToSaleDto(saleSaved);
@@ -147,4 +160,10 @@ public class SaleService {
 	public List<MovementSaleEntity> getMovementSales() {
 		return movementSalesRepository.findAll();
 	}
+	
+	public ArrayList<SaleDto> findByPersonId(long id) {
+		ArrayList<SaleDto> sales = salesRepository.findByPersonId(id).orElseThrow(() -> new RuntimeException("Person not found")).stream().map(MapperDto::convertToSaleDto).collect(Collectors.toCollection(ArrayList::new));
+		return sales;
+	}
+	
 }

@@ -36,7 +36,7 @@ public class WalletController {
 	}
 	
 	@PostMapping("/movement")
-	public ResponseEntity<WalletEntity> createWalletMovimento(@RequestBody MovementWalletDto movementWalletDto) throws Exception {
+	public ResponseEntity<WalletEntity> createWalletMovement(@RequestBody MovementWalletDto movementWalletDto) throws Exception {
 		return ResponseEntity.ok(walletService.createWalletMovement(movementWalletDto));
 	}
 	

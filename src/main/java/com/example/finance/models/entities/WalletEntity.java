@@ -34,5 +34,5 @@ public class WalletEntity {
 	
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference
-	private List<MovementWalletEntity> movementWalletEntity = new ArrayList<>();
+	private List<MovementWalletEntity> movement = new ArrayList<>();
 }

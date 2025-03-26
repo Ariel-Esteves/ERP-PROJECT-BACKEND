@@ -1,5 +1,6 @@
 package com.example.finance.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,7 +17,6 @@ public class PersonEntity {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private long id;
-	
 	private String name;
 	
 	private String cpf;
@@ -28,7 +28,7 @@ public class PersonEntity {
 	@ManyToOne(cascade=CascadeType.ALL)
 	private PersonTypeEntity personType;
 	@OneToMany(fetch=FetchType.LAZY)
-	@JsonManagedReference("sale-person")
+	@JsonBackReference("sale-person")
 	private List<SaleEntity> sales;
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "wallet_id", referencedColumnName = "id")

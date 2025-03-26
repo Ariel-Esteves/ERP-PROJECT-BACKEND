@@ -1,6 +1,7 @@
 package com.example.finance.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,11 +26,12 @@ public class SaleEntity {
 	@ManyToOne(cascade = CascadeType.PERSIST)
 	private SaleTypeEntity saleType;
 	@ManyToOne(cascade = CascadeType.PERSIST)
-	@JsonBackReference("sale-person")
+	@JsonManagedReference("sale-person")
 	private PersonEntity person;
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<MovementSaleEntity> movementSales = new ArrayList<>();
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JsonManagedReference("sale-wallet")
 	private List<MovementWalletEntity> movementWallet = new ArrayList<>();
 
 }

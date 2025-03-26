@@ -29,6 +29,7 @@ public class MovementWalletEntity {
 	@JsonBackReference
 	private WalletEntity wallet;
 	@ManyToOne
+	@JsonBackReference("sale-wallet")
 	private SaleEntity sale;
 
 }
